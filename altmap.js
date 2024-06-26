@@ -73,8 +73,10 @@ class Map {
     constructor(seed) {
         // create a new map
         // length in kms
+        this.map_size = 50; // in kms
         this.size = 50;
         this.pixels = 400;
+        this.map_scale = this.pixels / this.map_size;
         // get pixels from canvas size
         // this.pixels = 800;
         this.noise_scale = 0.03;
@@ -85,7 +87,6 @@ class Map {
         // this.noise = new noise(seed);
         // noiseSeed(seed);
         }
-    
     // function to draw map
     draw() {
         let min = 0;
@@ -124,12 +125,10 @@ class Map {
                         rect(x, y, 1, 1);
                     }
                 }
-                
-                // background(color/3);
+            
+            // background(color/3);
             }
         }
-        console.log("min: " + min + " max: " + max);
-        
+    console.log("min: " + min + " max: " + max);
     }
-
-    }
+}
