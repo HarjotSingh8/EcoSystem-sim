@@ -1,6 +1,10 @@
 let species_ref = {
-        "canis lupus": {"common_name": "wolf", "diet": "carnivore", "pantheria_data": { "adult_body_mass_g": 31, "adult_body_length_cm": 105, "activity_cycle": 2, "age_at_first_birth_days": 547, "gestation_length_days": 63, "litter_size": 4.98, "litters_per_year": 2, "max_longevity_months": 354, "weaning_age_days": 44.82, "home_range_km2": 159.86,}},
-        'alces': {'common_name': 'moose', 'diet': 'herbivore', 'pantheria_data': {'adult_body_mass_g': 461.90076, 'adult_body_length_cm': 293.04699999999997, 'activity_cycle': '2.00', 'age_at_first_birth_days': '1216.66', 'gestation_length_days': '235.00', 'litter_size': '1.25', 'litters_per_year': '1.70', 'max_longevity_months': '324.00', 'weaning_age_days': '98.85', 'home_range_km2': '71.75'}},
+        // "canis lupus": {"common_name": "wolf", "diet": "carnivore", "pantheria_data": { "adult_body_mass_g": 31, "adult_body_length_cm": 105, "activity_cycle": 2, "age_at_first_birth_days": 547, "gestation_length_days": 63, "litter_size": 4.98, "litters_per_year": 2, "max_longevity_months": 354, "weaning_age_days": 44.82, "home_range_km2": 159.86,}},
+        // 'alces': {'common_name': 'moose', 'diet': 'herbivore', 'pantheria_data': {'adult_body_mass_g': 461.90076, 'adult_body_length_cm': 293.04699999999997, 'activity_cycle': '2.00', 'age_at_first_birth_days': '1216.66', 'gestation_length_days': '235.00', 'litter_size': '1.25', 'litters_per_year': '1.70', 'max_longevity_months': '324.00', 'weaning_age_days': '98.85', 'home_range_km2': '71.75'}},
+        // 'canadensis': {'common_name': 'beaver', 'diet': 'herbivore', 'pantheria_data': {'adult_body_mass_g': 18.12441, 'adult_body_length_cm': 75.474, 'activity_cycle': '2.00', 'age_at_first_birth_days': '220', 'gestation_length_days': '111.59', 'litter_size': '2.10', 'litters_per_year': '1.00', 'max_longevity_months': '180.00', 'weaning_age_days': '46.50', 'home_range_km2': '5.5'}}
+        "canis lupus": {"common_name": "wolf", "diet": "carnivore", "pantheria_data": { "adult_body_mass_g": 31, "adult_body_length_cm": 105, "activity_cycle": 2, "age_at_first_birth_days": 547, "gestation_length_days": 63, "litter_size": 4.98, "litters_per_year": 2, "max_longevity_months": 354, "weaning_age_days": 44.82, "home_range_km2": 2500,}},
+        'alces': {'common_name': 'moose', 'diet': 'herbivore', 'pantheria_data': {'adult_body_mass_g': 461.90076, 'adult_body_length_cm': 293.04699999999997, 'activity_cycle': '2.00', 'age_at_first_birth_days': '1216.66', 'gestation_length_days': '235.00', 'litter_size': '1.25', 'litters_per_year': '1.70', 'max_longevity_months': '324.00', 'weaning_age_days': '98.85', 'home_range_km2': '900'}},
+        'canadensis': {'common_name': 'beaver', 'diet': 'herbivore', 'pantheria_data': {'adult_body_mass_g': 18.12441, 'adult_body_length_cm': 75.474, 'activity_cycle': '2.00', 'age_at_first_birth_days': '220', 'gestation_length_days': '111.59', 'litter_size': '2.10', 'litters_per_year': '1.00', 'max_longevity_months': '180.00', 'weaning_age_days': '46.50', 'home_range_km2': '400'}}
     }
 
 class Agent {
@@ -17,7 +21,7 @@ class Agent {
             this.sex = "female";
         }
         this.move_distance = Math.sqrt(this.species.pantheria_data.home_range_km2) * global_time_step;
-        this.move_distance_in_pixels = this.move_distance * simmap.scale/8;
+        this.move_distance_in_pixels = this.move_distance * simmap.scale/16;
         this.house_move_distance = Math.sqrt(this.species.pantheria_data.home_range_km2) / 100;
         this.house_move_distance_in_pixels = this.house_move_distance * simmap.scale;
         this.last_reproduce = 100000;
@@ -29,7 +33,7 @@ class Agent {
         // fill(0);
         if (!this.alive) {
             fill(0, 0, 0);
-            ellipse(this.location[0], this.location[1], 5, 5);
+            ellipse(this.location[0], this.location[1], 4, 4);
             return;
         }
         if (this.species.diet === "herbivore") {
@@ -38,7 +42,7 @@ class Agent {
         if (this.species.diet === "carnivore") {
             fill(255, 0, 0);
         }
-        ellipse(this.location[0], this.location[1], 5, 5);
+        ellipse(this.location[0], this.location[1], 4, 4);
     }
     // update
     update(time_step) {
@@ -100,7 +104,7 @@ class Agent {
         // if (this.age > this.species.pantheria_data.age_at_first_birth_days && this.last_reproduce > 365/this.species.pantheria_data.litters_per_year) {
             if (this.age > this.species.pantheria_data.age_at_first_birth_days) {
             // check if agent can reproduce
-            if (this.starvation_days < 10 && Math.random() < global_time_step * this.species.pantheria_data.litters_per_year * this.species.pantheria_data.litter_size / (365*2)) {
+            if (this.starvation_days < 10 && Math.random() < global_time_step * this.species.pantheria_data.litters_per_year * this.species.pantheria_data.litter_size / (365)) {
                 // reproduce if possible
                 this.reproduce();
             }

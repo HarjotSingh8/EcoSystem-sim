@@ -1,8 +1,9 @@
 var data = []
 var resource_percentages = []
 var species_counts = {
-    "wolf": [],
-    "moose": []
+    "beaver": [],
+    "moose": [],
+    "wolf": []
 };
 var ctx = document.getElementById('myChart').getContext('2d');
     var chart = new Chart(ctx, {
@@ -22,7 +23,7 @@ var ctx = document.getElementById('myChart').getContext('2d');
             data: [],
         },
         {
-            label: "Wolves",
+            label: "Beaver",
             fill: false,
             tension: 0,
             borderColor: 'rgb(0, 255, 0)',
@@ -34,12 +35,25 @@ var ctx = document.getElementById('myChart').getContext('2d');
             tension: 0,
             borderColor: 'rgb(0, 0, 255)',
             data: []
+        },
+        {
+            label: "Wolf",
+            fill: false,
+            tension: 0,
+            borderColor: 'rgb(255, 0, 0)',
+            data: []
         }
     ]
     },
 
     // Configuration options go here
-    options: {}
+    options: {
+        scales: {
+            y: {
+                beginAtZero: true
+            }
+        }
+    }
 });
 
 var ctx_resourceChart = document.getElementById('resourceChart').getContext('2d');
@@ -62,7 +76,13 @@ var ctx_resourceChart = document.getElementById('resourceChart').getContext('2d'
     ]
     },
     // Configuration options go here
-    options: {}
+    options: {
+        scales: {
+            y: {
+                beginAtZero: true
+            }
+        }
+    }
 });
 
 // chart.canvas.parentNode.style.height = '128px';
@@ -70,8 +90,9 @@ var ctx_resourceChart = document.getElementById('resourceChart').getContext('2d'
 
 function updateChart() {
     chart.data.datasets[0].data = [...data];
-    chart.data.datasets[1].data = [...species_counts["wolf"]];
+    chart.data.datasets[1].data = [...species_counts["beaver"]];
     chart.data.datasets[2].data = [...species_counts["moose"]];
+    chart.data.datasets[3].data = [...species_counts["wolf"]];
     chart.data.labels = [...Array(data.length).keys()];
     chart.update();
     resourceChart.data.datasets[0].data = [...resource_percentages];
@@ -104,20 +125,26 @@ function setup() {
     noStroke();
     simmap.draw();
     simmap.draw_agents();
-    simmap.simulate_agents();
+    // simmap.simulate_agents();
     // drawChart();
 }
 
 function draw() {
-    
+    // noLoop();
+    // return;
     // selector decides what to draw here
     // background(200);
     // draw the map
 
-    simmap.draw();
+    // simmap.draw();
+    simmap.checkerboard_draw()
     // simmap.draw_resources();
+    // simmap.draw_resources_checkerboarded();
     simmap.draw_agents();
-    simmap.simulate_agents();
+    // for (let i = 0; i < global_time_step; i++) {
+        simmap.simulate_agents();
+    // }
+    
     // console.log(simmap.agents.length)
     // print number of each species
     // data.push(simmap.agents.length)
@@ -143,7 +170,7 @@ function draw() {
     // if (data.length % 10 == 0) {
         updateChart('active');
     // }
-    console.log(species_count);
+    // console.log(species_count);
     // log total number of resources on map
     let total_resources = 0;
     for (let row of simmap.resource_blocks) {
@@ -151,6 +178,6 @@ function draw() {
             total_resources += block.resources/block.cap;
         }
     }
-    console.log("Total resources: " + total_resources/(simmap.resource_blocks.length*simmap.resource_blocks[0].length));
+    // console.log("Total resources: " + total_resources/(simmap.resource_blocks.length*simmap.resource_blocks[0].length));
     resource_percentages.push(total_resources/(simmap.resource_blocks.length*simmap.resource_blocks[0].length));
 }

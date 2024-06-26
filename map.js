@@ -100,13 +100,14 @@ class Map {
     constructor(seed) {
         // create a new map
         // length in kms
-        this.size = 100;
+        this.size = 200;
         this.pixels = 400;
         this.scale = this.pixels / this.size;
         // get pixels from canvas size
         // this.pixels = 800;
         this.noise_scale = 0.03;
-        this.regen_multiplier = 5000;
+        // this.noise_scale = 0.01;
+        this.regen_multiplier = 1500;
         this.agents = []
         if (seed) {
             noiseSeed(seed);
@@ -117,6 +118,7 @@ class Map {
         // spawn agents
         // this.init_agents();
         this.init_resource_generation();
+        this.checkerboard_offset = [0,0]
         }
     
     // function to draw map
@@ -126,9 +128,9 @@ class Map {
             for (let y = 0; y < this.pixels; y++) {
                 let resource_block = this.resource_blocks[x][y];
                 if (resource_block.resources > 0) {
-                    console.log(Math.round(max(0, min(255, 0 + resource_block.resources * 255))))
+                    // console.log(Math.round(max(0, min(255, 0 + resource_block.resources/resource_block.cap * 255))))
                     fill(
-                        Math.round(max(0, min(255, 0 + resource_block.resources * 255)))
+                        255-Math.round(max(0, min(255, 0 + resource_block.resources/resource_block.cap * 255)))
                     );
                     rect(x, y, 1, 1);
                 }
@@ -137,6 +139,50 @@ class Map {
                     rect(x, y, 1, 1);
                 }
             }
+        }
+    }
+    draw_resources_checkerboarded() {
+        // draw resources on the map
+        // draw 2x boxes
+        for (let x = this.checkerboard_offset[0]*2; x < this.pixels; x+=4) {
+            for (let y = this.checkerboard_offset[1]*2; y < this.pixels; y+=4) {
+                let resource_block = this.resource_blocks[x][y];
+                if (resource_block.resources > 0) {
+                    // console.log(Math.round(max(0, min(255, 0 + resource_block.resources/resource_block.cap * 255)))
+                    // fill(
+                    //     255-Math.round(max(0, min(255, 0 + resource_block.resources/resource_block.cap * 255))), 0, 0, 100
+                    // );
+                    // fill(Math.round(max(0, min(255, 0 + resource_block.latest_consumption/resource_block.cap * 512))));
+                    fill(Math.round(max(0, min(255, 255 - resource_block.min_resources/resource_block.cap * 255))), 0, 0);
+                    rect(x, y, 2, 2);
+                }
+                else {
+                    // fill(0, 0, 0, 200);
+                    // rect(x, y, 1, 1);
+                }
+            }
+        }
+        // update checkerboard offset, cover all pixels
+        this.checkerboard_offset[0] = (this.checkerboard_offset[0] + 1) % 2;
+        if (this.checkerboard_offset[0] == 0) {
+            this.checkerboard_offset[1] = (this.checkerboard_offset[1] + 1) % 2;
+        }
+    }
+
+    checkerboard_draw() {
+        // draw checkerboard pattern on the map
+        for (let x = this.checkerboard_offset[0]; x < this.pixels; x+=2) {
+            for (let y = this.checkerboard_offset[1]; y < this.pixels; y+=2) {
+                // get pixel value here
+                let pixel = this.get_pixel(x, y);
+                fill(pixel["terrain_color"]);
+                rect(x, y, 1, 1);
+            }
+        }
+        // update checkerboard offset, cover all pixels
+        this.checkerboard_offset[0] = (this.checkerboard_offset[0] + 1) % 2;
+        if (this.checkerboard_offset[0] == 0) {
+            this.checkerboard_offset[1] = (this.checkerboard_offset[1] + 1) % 2;
         }
     }
     draw() {
@@ -188,6 +234,13 @@ class Map {
         }
     }
     simulate_agents() {
+        // increment resource blocks
+        for (let x = 0; x < this.pixels; x++) {
+            for (let y = 0; y < this.pixels; y++) {
+                let resource_block = this.resource_blocks[x][y];
+                resource_block.increment(global_time_step);
+            }
+        }
         for (let agent of this.agents) {
             agent.update(global_time_step);
             // remove agent if dead
@@ -196,20 +249,13 @@ class Map {
                 this.agents.splice(index, 1);
             }
         }
-        // increment resource blocks
-        for (let x = 0; x < this.pixels; x++) {
-            for (let y = 0; y < this.pixels; y++) {
-                let resource_block = this.resource_blocks[x][y];
-                resource_block.increment(global_time_step);
-            }
-        }
     }
     init_agents() {
-        let min_agents = 20;
+        let min_agents = 30;
         for (let species in species_ref) {
             let number = Math.floor(Math.random() * min_agents) + min_agents;
             if(species_ref[species]["diet"] == "herbivore") {
-                number *= 20;
+                number *= 30;
             }
             this.spawn_agents(species, number);
         }
@@ -222,18 +268,7 @@ class Map {
        }
     }
 
-    draw_resources() {
-        // draw resources on the map
-        for (let x = 0; x < this.pixels; x++) {
-            for (let y = 0; y < this.pixels; y++) {
-                let resource_block = this.resource_blocks[x][y];
-                if (resource_block.resources > 0) {
-                    fill(0, 255, 0);
-                    rect(x, y, 1, 1);
-                }
-            }
-        }
-    }
+
 
     // function to return details about a given pixel
     get_pixel(x, y) {
@@ -330,6 +365,7 @@ class Map {
                     continue;
                 }
                 this.resource_blocks[i][j].resources -= calories_per_block;
+                this.resource_blocks[i][j].latest_consumption += calories_per_block;
             }
         }
 
@@ -473,14 +509,22 @@ class ResourceBlock {
         this.x = x;
         this.y = y;
         this.cap = 10000;
+        // if (regen_rate == 0) {
+        //     this.cap=0;
+        // }
         this.resources = this.cap;
         this.regen_rate = regen_rate;
-        
+        this.latest_consumption = 0;
+        this.min_resources = this.cap;
     }
     increment(time_step) {
         this.resources += this.regen_rate * time_step;
         if (this.resources > this.cap) {
             this.resources = this.cap;
+        }
+        this.latest_consumption = 0;
+        if (this.resources < this.min_resources) {
+            this.min_resources = this.resources;
         }
     }
     decrement(time_step) {
